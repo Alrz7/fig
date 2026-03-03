@@ -1,0 +1,7 @@
+{
+  "dir": "./",
+  "name": "testConfig.json",
+  "intData": { "name": 3, "number": 3 },
+  "stringData": {},
+  "listData": { "conf1": {} }
+}

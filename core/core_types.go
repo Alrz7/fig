@@ -4,9 +4,9 @@ package core
 
 type cfInt map[string]int
 
-func (h *handeler) Int(key string, val int) *cfInt {
-	h.intData[key] = val
-	return &(h.intData)
+func (h *Handeler) Int(key string, val int) *cfInt {
+	h.IntData[key] = val
+	return &(h.IntData)
 }
 func (c *cfInt) Set(key string, newValue int) {
 	(*c)[key] = newValue
@@ -16,9 +16,9 @@ func (c *cfInt) Set(key string, newValue int) {
 
 type cfString map[string]string
 
-func (h *handeler) String(key, val string) *cfString {
-	h.stringData[key] = val
-	return &(h.stringData)
+func (h *Handeler) String(key, val string) *cfString {
+	h.StringData[key] = val
+	return &(h.StringData)
 }
 func (c *cfString) Set(key string, newValue string) {
 	(*c)[key] = newValue
@@ -28,9 +28,9 @@ func (c *cfString) Set(key string, newValue string) {
 
 type cflist map[string]any
 
-func (h *handeler) List(key string, val any) *cflist {
-	h.listData[key] = val
-	return &(h.listData)
+func (h *Handeler) List(key string, val any) *cflist {
+	h.ListData[key] = val
+	return &(h.ListData)
 }
 func (l *cflist) Set(key string, newValue any) {
 	(*l)[key] = newValue
