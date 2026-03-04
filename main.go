@@ -29,23 +29,30 @@ func main() {
 	// saved1.Set("number", 8)
 	// fmt.Println((*saved1)["number"])
 	appConfig := core.CreateNewHandeler("./", "testConfig.json")
-	myInts := appConfig.Int("number", 3)
-	fmt.Println(*myInts)
-	myInts.Set("name", 3)
-	fmt.Println(*myInts)
+	secondConfig := core.CreateNewHandeler(core.BaseDir, "secondConfig.json")
 
-	//--
-
-	type myconf struct {
-		name string
-		num  int
-	}
-	myStruct := myconf{name: "navid", num: 3}
-	strcuts := appConfig.List("conf1", myStruct)
-
-	fmt.Println(*strcuts)
-	fmt.Println((*strcuts)["conf1"])
 	fmt.Println(appConfig)
-	appConfig.PanicSave()
 
+	fmt.Println(secondConfig)
+
+	// appConfig.String("apiKey", "sgklfsflkflhk6h655jk7gjk5gj6gl345gh6jkg3l4")
+	// appConfig.String("name", "navid")
+
+	// type driver struct {
+	// 	Name   string `Json:"name"`
+	// 	Age    int    `Json:"age"`
+	// 	Gender string `Json:"gender"`
+	// 	Job    string `Json:"job"`
+	// }
+	// maria := driver{
+	// 	Name:   "maria",
+	// 	Age:    25,
+	// 	Gender: "female",
+	// 	Job:    "uberDriver",
+	// }
+
+	// secondConfig.List("newDriver", maria)
+	// secondConfig.String("name", "maria")
+	// appConfig.PanicSave()
+	// secondConfig.PanicSave()
 }

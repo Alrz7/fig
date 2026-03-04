@@ -12,6 +12,12 @@ func (c *cfInt) Set(key string, newValue int) {
 	(*c)[key] = newValue
 }
 
+func (c *cfInt) Pop(key string) int {
+	tempval := (*c)[key]
+	defer delete(*c, key)
+	return tempval
+}
+
 // String Data /----
 
 type cfString map[string]string
@@ -24,6 +30,12 @@ func (c *cfString) Set(key string, newValue string) {
 	(*c)[key] = newValue
 }
 
+func (c *cfString) Pop(key string) string {
+	tempval := (*c)[key]
+	defer delete(*c, key)
+	return tempval
+}
+
 // List Data /----
 
 type cflist map[string]any
@@ -34,4 +46,10 @@ func (h *Handeler) List(key string, val any) *cflist {
 }
 func (l *cflist) Set(key string, newValue any) {
 	(*l)[key] = newValue
+}
+
+func (c *cflist) Pop(key string) any {
+	tempval := (*c)[key]
+	defer delete(*c, key)
+	return tempval
 }

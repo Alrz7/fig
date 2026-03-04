@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+const (
+	BaseDir = "./"
+	ConfDir = "./config/"
+)
+
 type Handeler struct {
 	Dir        string   `json:"dir"`
 	Name       string   `json:"name"`
@@ -19,8 +24,9 @@ type Handeler struct {
 // var Handelers = map[string]handeler{}
 
 func CreateNewHandeler(dir, name string) *Handeler {
-	newHandeler := Handeler{Dir: dir, Name: name, IntData: cfInt{}, StringData: cfString{}, ListData: cflist{}}
-	return &newHandeler
+	hndlr := Handeler{Dir: dir, Name: name, IntData: cfInt{}, StringData: cfString{}, ListData: cflist{}}
+	hndlr.PanicRestore()
+	return &hndlr
 }
 
 func (h *Handeler) Save() error {
@@ -37,12 +43,28 @@ func (h *Handeler) Save() error {
 }
 
 func (h *Handeler) PanicSave() {
-	bytes, err := json.Marshal(h)
-	if err != nil {
+	if err := h.Save(); err != nil {
 		log.Panicf("%v : there was an error while saving `%v` at `%v` : %v", time.Now(), h.Name, h.Dir, err)
 	}
-	if err := file.Save(bytes, h.Dir, h.Name); err != nil {
-		log.Panicf("%v : there was an error while saving `%v` at `%v` : %v", time.Now(), h.Name, h.Dir, err)
+}
+
+func (h *Handeler) Restore() error {
+	// var res Handeler
+	exists, err := file.DoesExist(h.Dir, h.Name)
+	if !exists {
+		return err
+	}
+	bytes, err := file.Read(h.Dir, h.Name)
+	err = json.Unmarshal(bytes, h)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (h *Handeler) PanicRestore() {
+	if err := h.Restore(); err != nil {
+		log.Panicf("%v : there was an error while Restoring `%v` from `%v` : %v", time.Now(), h.Name, h.Dir, err)
 	}
 }
 

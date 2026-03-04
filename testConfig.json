@@ -1,7 +1,10 @@
 {
   "dir": "./",
   "name": "testConfig.json",
-  "intData": { "name": 3, "number": 3 },
-  "stringData": {},
-  "listData": { "conf1": {} }
+  "intData": {},
+  "stringData": {
+    "apiKey": "sgklfsflkflhk6h655jk7gjk5gj6gl345gh6jkg3l4",
+    "name": "navid"
+  },
+  "listData": {}
 }

@@ -1,0 +1,14 @@
+{
+  "dir": "./",
+  "name": "secondConfig.json",
+  "intData": {},
+  "stringData": { "name": "maria" },
+  "listData": {
+    "newDriver": {
+      "Name": "maria",
+      "Age": 25,
+      "Gender": "female",
+      "Job": "uberDriver"
+    }
+  }
+}
