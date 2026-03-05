@@ -4,11 +4,17 @@
   "intData": {},
   "stringData": { "name": "maria" },
   "listData": {
+    "bartender": {
+      "Name": "miles",
+      "Age": 24,
+      "Gender": "male",
+      "Job": "bartender"
+    },
     "newDriver": {
-      "Name": "maria",
       "Age": 25,
       "Gender": "female",
-      "Job": "uberDriver"
+      "Job": "uberDriver",
+      "Name": "maria"
     }
   }
 }

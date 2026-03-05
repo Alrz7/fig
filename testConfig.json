@@ -1,10 +1,10 @@
 {
   "dir": "./",
   "name": "testConfig.json",
-  "intData": {},
-  "stringData": {
-    "apiKey": "sgklfsflkflhk6h655jk7gjk5gj6gl345gh6jkg3l4",
-    "name": "navid"
-  },
-  "listData": {}
+  "format": "json",
+  "last_time_modified": "0001-01-01T00:00:00Z",
+  "data": {
+    "miles": { "Name": "miles", "Age": 23, "Gender": "male", "Job": "driver" },
+    "porche911": { "Name": "porche911", "Model": "porche", "Year": 2003 }
+  }
 }

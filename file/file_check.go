@@ -18,7 +18,6 @@ func Read(dir, name string) ([]byte, error) {
 	var err error
 	myfile, _ := os.Open(dir + name)
 	defer myfile.Close()
-
 	info, _ := myfile.Stat()
 	b := make([]byte, info.Size())
 
