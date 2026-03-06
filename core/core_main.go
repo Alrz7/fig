@@ -18,7 +18,7 @@ type Handeler struct {
 	Name           string    `json:"name"`
 	Format         string    `json:"format"`
 	LatstTmodified time.Time `json:"last_time_modified"`
-	restored       bool
+	restored       bool      // blocking Set() functions from saving datas to the File before Restoring
 	// IntField       cfInt     `json:"intField"`
 	// StringField    cfString  `json:"stringField"`
 	Data cField `json:"data"`
@@ -43,6 +43,9 @@ func (h *Handeler) Set(key string, newValue any) { // NOTE : need to make a WARN
 	if h.restored {
 		h.Save()
 	}
+}
+func (h *Handeler) Pop(key string) any {
+	return h.Data.Pop(key)
 }
 
 func (h *Handeler) Save() error {
@@ -79,13 +82,28 @@ func (h *Handeler) Restore() error {
 		return err
 	}
 	h.restored = true
+	newObject := needToSave(h, &tempHandeler.Data)
+	if newObject {
+		h.Save()
+	}
 	return nil
 
 }
 
+// if a new data was added , there should be a call to Save() after Restoring
+func needToSave(h *Handeler, data *cField) bool {
+	for key := range h.Data {
+		if _, ok := (*data)[key]; !ok {
+			// fmt.Println("there is a new Object : ", key)
+			return true
+		}
+	}
+	return false
+}
+
 func marsh(h *Handeler, data *cField) error {
 	for key, val := range *data {
-		if _, ok := h.Data[key]; ok {
+		if _, ok := h.Data[key]; ok { // NOTE: IF OK was False: we should decode to either Pop that Object or create a warning
 			// fmt.Println(key, "found!: ")
 			b, err := json.Marshal(val)
 			if err != nil {
@@ -96,6 +114,8 @@ func marsh(h *Handeler, data *cField) error {
 			if err != nil {
 				return err
 			}
+		} else {
+			log.Panicf("Not All of %v's parameters were declared in your Application: lost `%v`", h.Name, key)
 		}
 	}
 	return nil
