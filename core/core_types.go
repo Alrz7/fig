@@ -47,16 +47,16 @@ func (c *cfString) Pop(key string) string {
 
 type cField map[string]any
 
-
 // func (h *Handeler) NewField(key string) *cField {   // this feature is not supported for Reading YET!.
-// 	var newField = cField{}
-// 	if elmnt, ok := (*h).Data[key]; ok {
-// 		newField = cField{key: elmnt}
-// 	} else {
-// 		(*h).Data[key] = &newField
-// 	}
-// 	return &newField
-// }
+//
+//		var newField = cField{}
+//		if elmnt, ok := (*h).Data[key]; ok {
+//			newField = cField{key: elmnt}
+//		} else {
+//			(*h).Data[key] = &newField
+//		}
+//		return &newField
+//	}
 func (l *cField) Set(key string, newValue any) {
 	(*l)[key] = newValue
 }

@@ -2,8 +2,8 @@ package core
 
 import (
 	"encoding/json"
+	"fig/echo"
 	"fig/file"
-	"log"
 	"strings"
 	"time"
 )
@@ -19,19 +19,21 @@ type Handeler struct {
 	Format         string    `json:"format"`
 	LatstTmodified time.Time `json:"last_time_modified"`
 	restored       bool      // blocking Set() functions from saving datas to the File before Restoring
+	Data           cField    `json:"data"`
+
 	// IntField       cfInt     `json:"intField"`
 	// StringField    cfString  `json:"stringField"`
-	Data cField `json:"data"`
-
 	// type, last_modified, etc.
 }
+
+var logger = echo.DefultLogger
 
 // var Handelers = map[string]handeler{}
 
 func CreateNewHandeler(dir, name string) *Handeler {
 	format := strings.Split(name, ".")[1]
 	if format != "json" {
-		log.Panicf("given format `%v` is not Supported by FIG", format)
+		logger.Errort("given format `%v` is not Supported by FIG", format)
 	}
 	hndlr := Handeler{Dir: dir, Name: name, Format: format, restored: false, Data: cField{}}
 	// hndlr.PanicRestore()
@@ -62,7 +64,7 @@ func (h *Handeler) Save() error {
 
 func (h *Handeler) PanicSave() {
 	if err := h.Save(); err != nil {
-		log.Panicf("there was an error while saving `%v` at `%v` : %v", h.Name, h.Dir, err)
+		logger.Error(err, "there was an error while saving `%v` at `%v`", h.Name, h.Dir)
 	}
 }
 
@@ -115,7 +117,7 @@ func marsh(h *Handeler, data *cField) error {
 				return err
 			}
 		} else {
-			log.Panicf("Not All of %v's parameters were declared in your Application: lost `%v`", h.Name, key)
+			logger.Errort("Not All of %v's parameters were declared in your Application: lost `%v`", h.Name, key)
 		}
 	}
 	return nil
@@ -123,6 +125,6 @@ func marsh(h *Handeler, data *cField) error {
 
 func (h *Handeler) PanicRestore(hr *Handeler) {
 	if err := h.Restore(); err != nil {
-		log.Panicf("there was an error while Restoring `%v` from `%v` : %v", h.Name, h.Dir, err)
+		logger.Error(err, "there was an error while Restoring `%v` from `%v`", h.Name, h.Dir)
 	}
 }
