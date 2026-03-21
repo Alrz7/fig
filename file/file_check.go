@@ -7,7 +7,7 @@ import (
 func DoesExist(dir, name string) (bool, error) {
 	_, err := os.Stat(dir + name)
 	if os.IsNotExist(err) { // file doesn't exist
-		return false, err
+		return false, nil
 	} else if err != nil { // another path error
 		return false, err
 	}

@@ -1,11 +1,12 @@
-package core
+package fig
 
 import (
 	"encoding/json"
-	"fig/echo"
-	"fig/file"
 	"strings"
 	"time"
+
+	"github.com/Alrz7/fig/echo"
+	"github.com/Alrz7/fig/file"
 )
 
 const (
@@ -30,10 +31,20 @@ var logger = echo.DefultLogger
 
 // var Handelers = map[string]handeler{}
 
+// Handeler is gonna be the first building block of your config (your config File btw :) (dir-string: ./foo1/foo2/ , name-string: [HandelerName].HandelerType)
+// FIG only supportes Json yet so the name is going to be [HandelerName].json
 func CreateNewHandeler(dir, name string) *Handeler {
-	format := strings.Split(name, ".")[1]
+	nrmlDir, ac := file.Normalized(dir, name)
+	if ac != 0 {
+		logger.Infot("The Path you've Set for [%v] is missing the ccorrect structure, Did you mean %v ?", name, nrmlDir)
+	}
+	spName := strings.Split(name, ".")
+	if len(spName) == 1 {
+		logger.NewError("The Config-Name you've Entered [%v] doesn't have the `Name.format` Structure : Did you mean [%v.json] ??", name, name)
+	}
+	format := spName[len(spName)-1]
 	if format != "json" {
-		logger.Errort("given format `%v` is not Supported by FIG", format)
+		logger.NewError("given format `%v` is not Supported by FIG", format)
 	}
 	hndlr := Handeler{Dir: dir, Name: name, Format: format, restored: false, Data: cField{}}
 	// hndlr.PanicRestore()
@@ -51,6 +62,7 @@ func (h *Handeler) Pop(key string) any {
 }
 
 func (h *Handeler) Save() error {
+	h.LatstTmodified = time.Now()
 	bytes, err := json.Marshal(h)
 	if err != nil {
 		return err
@@ -70,26 +82,34 @@ func (h *Handeler) PanicSave() {
 
 func (h *Handeler) Restore() error {
 	exists, err := file.DoesExist(h.Dir, h.Name)
-	if !exists {
+	if exists {
+		bytes, err := file.Read(h.Dir, h.Name)
+		var tempHandeler Handeler
+		err = json.Unmarshal(bytes, &tempHandeler)
+		if err != nil {
+			return err
+		}
+		err = marsh(h, &tempHandeler.Data)
+		if err != nil {
+			return err
+		}
+		h.restored = true
+		newObject := needToSave(h, &tempHandeler.Data)
+		if newObject {
+			err = h.Save()
+			if err != nil {
+				return err
+			}
+		}
+	} else if err != nil {
 		return err
-	}
-	bytes, err := file.Read(h.Dir, h.Name)
-	var tempHandeler Handeler
-	err = json.Unmarshal(bytes, &tempHandeler)
-	if err != nil {
-		return err
-	}
-	err = marsh(h, &tempHandeler.Data)
-	if err != nil {
-		return err
-	}
-	h.restored = true
-	newObject := needToSave(h, &tempHandeler.Data)
-	if newObject {
-		h.Save()
+	} else {
+		err = h.Save()
+		if err != nil {
+			return err
+		}
 	}
 	return nil
-
 }
 
 // if a new data was added , there should be a call to Save() after Restoring
@@ -117,13 +137,14 @@ func marsh(h *Handeler, data *cField) error {
 				return err
 			}
 		} else {
-			logger.Errort("Not All of %v's parameters were declared in your Application: lost `%v`", h.Name, key)
+			logger.NewError("Not All of %v's parameters were declared in your Application: lost `%v`", h.Name, key)
 		}
 	}
 	return nil
 }
 
-func (h *Handeler) PanicRestore(hr *Handeler) {
+// it restores the Handeler to restore any saved config values
+func (h *Handeler) PanicRestore() {
 	if err := h.Restore(); err != nil {
 		logger.Error(err, "there was an error while Restoring `%v` from `%v`", h.Name, h.Dir)
 	}

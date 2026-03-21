@@ -22,13 +22,17 @@ var DefultLogger = Logger{
 	InfoLogger:  DefultInfoLog,
 }
 
-func (l *Logger) Errort(text string, a ...any) {
+// create new Error based on customized logger WithOut Actually using (err error).
+// It Causes the program to exit after parsing the error with os.Exit(1)
+func (l *Logger) NewError(text string, a ...any) {
 	txt := fmt.Sprintf(text, a...)
 	trace := fmt.Sprintf("%v: %s", txt, debug.Stack())
 	l.ErrorLogger.Output(2, trace)
 	os.Exit(1)
 }
 
+// Its Basicly NewError() function but you Need to pass the (err error).
+// NOTE that it checks the err Itself (err != nil).
 func (l *Logger) Error(err error, text string, a ...any) {
 	if err != nil {
 		txt := fmt.Sprintf(text, a...)
@@ -40,6 +44,10 @@ func (l *Logger) Error(err error, text string, a ...any) {
 
 func (l *Logger) Info(text string) {
 	l.InfoLogger.Println(text)
+}
+func (l *Logger) Infot(text string, a ...any) {
+	txt := fmt.Sprintf(text, a...)
+	l.InfoLogger.Println(txt)
 }
 
 // 	stac := trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
