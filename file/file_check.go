@@ -14,6 +14,14 @@ func DoesExist(dir, name string) (bool, error) {
 	return true, nil
 }
 
+func CheckDir(dir string) (bool, error) {
+	return DoesExist(dir, "")
+}
+
+func MakeDir(dir string) error {
+	return os.Mkdir(dir, os.ModeDir)
+}
+
 func Read(dir, name string) ([]byte, error) {
 	var err error
 	myfile, _ := os.Open(dir + name)

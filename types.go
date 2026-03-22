@@ -2,19 +2,19 @@ package fig
 
 // Int Data /----
 
-type cfInt map[string]int
+type tpInt map[string]int
 
-func (f *cField) NewIntField(key string) *cfInt {
-	newIntField := cfInt{}
+func (f *Topic) NewIntField(key string) *tpInt {
+	newIntField := tpInt{}
 	(*f)[key] = &newIntField
 	return &newIntField
 
 }
-func (c *cfInt) Set(key string, newValue int) {
+func (c *tpInt) Set(key string, newValue int) {
 	(*c)[key] = newValue
 }
 
-func (c *cfInt) Pop(key string) int {
+func (c *tpInt) Pop(key string) int {
 	tempval := (*c)[key]
 	defer delete(*c, key)
 	return tempval
@@ -22,18 +22,18 @@ func (c *cfInt) Pop(key string) int {
 
 // String Data /----
 
-type cfString map[string]string
+type tpString map[string]string
 
-func (f *cField) NewStringField(key, val string) *cfString {
-	newStringField := cfString{}
+func (f *Topic) NewStringField(key, val string) *tpString {
+	newStringField := tpString{}
 	(*f)[key] = &newStringField
 	return &newStringField
 }
-func (c *cfString) Set(key string, newValue string) {
+func (c *tpString) Set(key string, newValue string) {
 	(*c)[key] = newValue
 }
 
-func (c *cfString) Pop(key string) string {
+func (c *tpString) Pop(key string) string {
 	tempval := (*c)[key]
 	defer delete(*c, key)
 	return tempval
@@ -45,7 +45,7 @@ func (c *cfString) Pop(key string) string {
 // 	*cField | *cfInt | *cfString | *int | *string
 // }
 
-type cField map[string]any
+type Topic map[string]any
 
 // func (h *Handeler) NewField(key string) *cField {   // this feature is not supported for Reading YET!.
 //
@@ -57,11 +57,11 @@ type cField map[string]any
 //		}
 //		return &newField
 //	}
-func (l *cField) Set(key string, newValue any) {
+func (l *Topic) Set(key string, newValue any) {
 	(*l)[key] = newValue
 }
 
-func (c *cField) Pop(key string) any {
+func (c *Topic) Pop(key string) any {
 	tempval := (*c)[key]
 	defer delete(*c, key)
 	return tempval

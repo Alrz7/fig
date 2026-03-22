@@ -1,5 +1,47 @@
 package fig
 
+import (
+	"testing"
+	"time"
+)
+
+func TestMain(t *testing.T) {
+
+	type api struct {
+		Url  string `json:"url"`
+		Port int    `json:"port"`
+	}
+	type car struct {
+		Name  string `Json:"name"`
+		Model string `Json:"model"`
+		Year  int    `Json:"year"`
+	}
+	porche911 := car{
+		Name:  "porche911",
+		Model: "porche",
+		Year:  2003,
+	}
+	google := api{}
+	appConfig := CreateNewHandeler(DefultDir, "appConfig")
+	mainField := appConfig.NewField(DefultDir, "app_api")
+
+	mainField.Set("google", &google)
+	google.Port = 5050
+
+	seocndField := appConfig.NewField("./config/", "Appconf_second")
+	seocndField.Set("porche911", &porche911)
+
+	appConfig.PanicRestore()
+
+	gt := func() {
+		time.Sleep(5 * time.Second)
+		porche911.Year = 2015
+		seocndField.Save()
+	}
+	gt()
+
+}
+
 // import (
 // 	"fmt"
 // )
