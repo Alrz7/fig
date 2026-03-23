@@ -3,6 +3,7 @@ package fig
 import (
 	"encoding/json"
 	"time"
+
 	"github.com/Alrz7/fig/file"
 )
 
@@ -10,6 +11,7 @@ type FieldInfo struct {
 	Dir              string    `json:"dir"`
 	Name             string    `json:"name"`
 	Format           string    `json:"format"`
+	LinkedToHandelr  bool      `json:"linked_to_handeler"`
 	LastModification time.Time `json:"last_time_modified"`
 }
 
@@ -18,35 +20,37 @@ type Field struct {
 	restored          bool      // blocking Set() functions from saving datas to the File before Restoring
 	Data              Topic     `json:"data"`
 	updateHandelrInfo func() error
-	// IntField       cfInt     `json:"intField"`
-	// StringField    cfString  `json:"stringField"`
 	// type, last_modified, etc.
 }
 
-func (h *Handeler) NewField(dir, name string) *Field {
+func CreateNewField(dir, name string) *Field {
 	// there should be the Dir-Path Unit checking this part
 	isThere, err := file.CheckDir(dir)
 	logger.Error(err, "")
 	if !isThere {
-		// err = file.MakeDir(dir)
-		// logger.Error(err, "")
 		logger.NewError("There was No such a Directory called %v, or maby the Path is Wrong!", dir)
 	}
 	newInfo := FieldInfo{
-		Dir:    dir,
-		Name:   name,
-		Format: Json,
+		Dir:             dir,
+		Name:            name,
+		Format:          Json,
+		LinkedToHandelr: false,
 	}
 	newfield := Field{
-		Info:              newInfo,
-		restored:          false,
-		Data:              Topic{},
-		updateHandelrInfo: h.SaveInfo,
+		Info:     newInfo,
+		restored: false,
+		Data:     Topic{},
 	}
-	// hndlr.PanicRestore()
-	h.Fields[name] = &newfield
-	h.FieldsInfo[name] = &newfield.Info
 	return &newfield
+}
+
+func (h *Handeler) NewField(dir, name string) *Field {
+	newfield := CreateNewField(dir, name)
+	newfield.Info.LinkedToHandelr = true
+	newfield.updateHandelrInfo = h.SaveInfo
+	h.Fields[name] = newfield
+	h.FieldsInfo[name] = &(newfield.Info)
+	return newfield
 }
 
 func (f *Field) Set(key string, newValue any) { // NOTE : need to make a WARNING about NewValue Being a Pointer (&any_value)
@@ -69,9 +73,11 @@ func (f *Field) Save() error {
 	if err != nil {
 		return err
 	}
-	err = f.updateHandelrInfo()
-	if err != nil {
-		return err
+	if f.Info.LinkedToHandelr {
+		err = f.updateHandelrInfo()
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -124,7 +130,6 @@ func (h *Handeler) PanicRestore() {
 func needToSave(f *Field, data *Topic) bool {
 	for key := range f.Data {
 		if _, ok := (*data)[key]; !ok {
-			// fmt.Println("there is a new Object : ", key)
 			return true
 		}
 	}
@@ -134,13 +139,11 @@ func needToSave(f *Field, data *Topic) bool {
 func marsh(f *Field, data *Topic) error {
 	for key, val := range *data {
 		if _, ok := f.Data[key]; ok { // NOTE: IF OK was False: we should decode to either Pop that Object or create a warning
-			// fmt.Println(key, "found!: ")
 			b, err := json.Marshal(val)
 			if err != nil {
 				return err
 			}
 			err = json.Unmarshal(b, f.Data[key])
-			// fmt.Println((h.Data[key]))
 			if err != nil {
 				return err
 			}

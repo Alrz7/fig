@@ -22,13 +22,13 @@ func TestMain(t *testing.T) {
 		Year:  2003,
 	}
 	google := api{}
-	appConfig := CreateNewHandeler(DefultDir, "appConfig")
-	mainField := appConfig.NewField(DefultDir, "app_api")
+	appConfig := CreateNewHandeler("./tmp/", "appConfig")
+	mainField := appConfig.NewField("./tmp/", "app_api")
 
 	mainField.Set("google", &google)
 	google.Port = 5050
 
-	seocndField := appConfig.NewField("./config/", "Appconf_second")
+	seocndField := appConfig.NewField("./tmp/", "Appconf_second")
 	seocndField.Set("porche911", &porche911)
 
 	appConfig.PanicRestore()
@@ -38,8 +38,7 @@ func TestMain(t *testing.T) {
 		porche911.Year = 2015
 		seocndField.Save()
 	}
-	gt()
-
+	go gt()
 }
 
 // import (
