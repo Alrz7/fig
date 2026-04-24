@@ -39,30 +39,16 @@ func (c *tpString) Pop(key string) string {
 	return tempval
 }
 
-// List Data /----
-
-// type ConfObj interface {
-// 	*cField | *cfInt | *cfString | *int | *string
-// }
+// free Data /----
 
 type Topic map[string]any
 
-// func (h *Handeler) NewField(key string) *cField {   // this feature is not supported for Reading YET!.
-//
-//		var newField = cField{}
-//		if elmnt, ok := (*h).Data[key]; ok {
-//			newField = cField{key: elmnt}
-//		} else {
-//			(*h).Data[key] = &newField
-//		}
-//		return &newField
-//	}
-func (l *Topic) Set(key string, newValue any) {
-	(*l)[key] = newValue
+func (t *Topic) Set(key string, newValue any) {
+	(*t)[key] = newValue
 }
 
-func (c *Topic) Pop(key string) any {
-	tempval := (*c)[key]
-	defer delete(*c, key)
+func (t *Topic) Pop(key string) any {
+	tempval := (*t)[key]
+	defer delete(*t, key)
 	return tempval
 }

@@ -1,0 +1,10 @@
+{
+  "info": {
+    "dir": "./tmp/",
+    "name": "app_api",
+    "format": ".json",
+    "linked_to_handeler": true,
+    "last_time_modified": "2026-03-27T22:57:15.116582276+03:30"
+  },
+  "data": { "google": { "url": "", "port": 5050 } }
+}

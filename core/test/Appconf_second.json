@@ -1,0 +1,12 @@
+{
+  "info": {
+    "dir": "./tmp/",
+    "name": "Appconf_second",
+    "format": ".json",
+    "linked_to_handeler": true,
+    "last_time_modified": "2026-03-27T22:57:15.11705572+03:30"
+  },
+  "data": {
+    "porche911": { "Name": "porche911", "Model": "porche", "Year": 2003 }
+  }
+}

@@ -6,7 +6,7 @@ import (
 
 func Save(b []byte, dir, name string) error {
 	var err error
-	myfile, _ := os.Create(dir + name + ".json")
+	myfile, _ := os.Create(dir + name)
 	defer myfile.Close()
 	_, err = myfile.Write(b)
 	if err != nil {

@@ -1,0 +1,22 @@
+{
+  "dir": "./tmp/",
+  "name": "appConfig",
+  "format": ".json",
+  "last_time_modified": "2026-03-27T22:57:15.119952079+03:30",
+  "fileds_info": {
+    "Appconf_second": {
+      "dir": "./tmp/",
+      "name": "Appconf_second",
+      "format": "json",
+      "linked_to_handeler": true,
+      "last_time_modified": "2026-03-27T22:57:15.11705572+03:30"
+    },
+    "app_api": {
+      "dir": "./tmp/",
+      "name": "app_api",
+      "format": "json",
+      "linked_to_handeler": true,
+      "last_time_modified": "2026-03-27T22:57:15.116582276+03:30"
+    }
+  }
+}

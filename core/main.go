@@ -3,13 +3,14 @@ package fig
 import (
 	"encoding/json"
 	"time"
+
 	"github.com/Alrz7/fig/echo"
 	"github.com/Alrz7/fig/file"
 )
 
 const (
 	DefultDir string = "./config/"
-	Json      string = "json"
+	Json      string = ".json"
 )
 
 type Handeler struct {
@@ -44,13 +45,14 @@ func CreateNewHandeler(dir, name string) *Handeler {
 	return &newHandeler
 }
 
+// .SaveInfo() saves infos of fields that has previusly changed.
 func (h *Handeler) SaveInfo() error {
 	h.LastModification = time.Now()
 	bytes, err := json.Marshal(h)
 	if err != nil {
 		return err
 	}
-	err = file.Save(bytes, h.BaseDir, h.Name)
+	err = file.Save(bytes, h.BaseDir, h.Name+h.BaseFormat)
 	if err != nil {
 		return err
 	}
@@ -75,10 +77,19 @@ func (h *Handeler) PanicSave() {
 	}
 }
 
+/*
+Field.Restore() matches the Last saved datas on the Config file to the raw variables at the startup,
+there should be a call to the restore function at the end of every config Initiation, so you can either put a field/handeler.Restore()
+at the end of your initiation part of code or create a confInit() function for your Config Initiation and use a `defer field/handeler.Restore()`
+to do the same, the second approache is Recommended.
+like the .Save() method, .Restore() is also avalable on both Handelers and Fields and it will effect on single field if is called on a field &
+will effect on all linked-Fields is is Called on a Handeler.
+if there was a variable in config that had no matching Item in your config youill get an error of type Prameter not declared.
+*/
 func (h *Handeler) Restore() error {
-	exists, err := file.DoesExist(h.BaseDir, h.Name)
+	exists, err := file.DoesExist(h.BaseDir, h.Name+h.BaseFormat)
 	if exists {
-		bytes, err := file.Read(h.BaseDir, h.Name)
+		bytes, err := file.Read(h.BaseDir, h.Name+h.BaseFormat)
 		err = json.Unmarshal(bytes, &h)
 		if err != nil {
 			return err
