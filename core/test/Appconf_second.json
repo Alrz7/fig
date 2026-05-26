@@ -3,7 +3,7 @@
     "dir": "./tmp/",
     "name": "Appconf_second",
     "format": ".json",
-    "linked_to_handeler": true,
+    "linked_to_Handler": true,
     "last_time_modified": "2026-03-27T22:57:15.11705572+03:30"
   },
   "data": {

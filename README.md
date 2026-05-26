@@ -1,160 +1,184 @@
 # FIG (Flexible In-memory ConFIGuration)
 
-FIG is a simple, lightweight and flexible Go library designed to simplify the management of configuration data in your applications. It allows you to define, load, save, and synchronize configuration structures using JSON files with ease. Whether you're managing simple key-value pairs or complex nested data, FIG provides a robust solution.
+**Note:** FIG was originally developed for personal use. Ongoing development is driven by the needs of the projects where it is integrated.
 
-## ✨ Overview
+FIG is a lightweight, file-backed configuration library for Go. It keeps your configuration in memory as native Go structs and automatically synchronises changes to JSON files. You can group related settings into **Handlers** and **Fields**, making it easy to manage complex application configurations.
 
-FIG empowers you to manage your application's configuration in a structured and dynamic way. It focuses on:
+## Features
 
--   **JSON-Based Configuration:** Define your configuration directly in JSON files.
--   **Type-Safe Structures:** Map your JSON data to Go structs for type safety and ease of use.
--   **Flexible Handlers:** Create multiple independent configuration handlers for different parts of your application.
--   **Dynamic Data Management:** Load, update, and save configuration values on-the-fly.
--   **Pointer-Based Updates:** Pass configuration values as pointers, allowing for real-time modifications.
--   **Automatic Synchronization:** Ensures your configuration is saved and restored reliably.
+- **In‑memory & persistent** – work with plain Go pointers; changes are saved to JSON.
+- **Handler & Field grouping** – organise configuration into logical sections.
+- **Automatic restore** – load saved state at startup and reconcile with your code.
+- **Pointer‑based tracking** – FIG watches the variables you give it (no manual getters/setters).
+- **Simple API** – `Set`, `Save`, `Restore` – that’s all you need.
+- **JSON only** (for now) – human‑readable and easy to edit.
 
-## 🚀 Getting Started
+## Installation
 
-FIG is designed to be intuitive and easy to integrate into your Go projects. Follow these steps to start managing your configuration:
-
-### 1. Create a New Handler
-
-Initialize a new configuration handler by specifying the directory where your JSON configuration files will be stored and the name of the main configuration file.
-
-```go
-// "./" is the directory, "testConfig" is the config file name
-appConfig := core.CreateNewHandeler("./", "testConfig")
+```bash
+go get github.com/Alrz7/fig
 ```
 
-### 2. Define Your Configuration Structure
+## Quick Start
 
-Create Go structs that mirror the structure of your JSON configuration. Use struct tags (`json:"fieldName"`) to map JSON keys to your Go struct fields.
-
-```go
-// Example: A driver's configuration
-type driver struct {
-	Name   string `json:"name"`
-	Age    int    `json:"age"`
-	Gender string `json:"gender"`
-	Job    string `json:"job"`
-}
-
-// Example: A company's configuration
-type Company struct {
-	ID        int               `json:"id"`
-	Name      string            `json:"name"`
-	Founded   string            `json:"founded"`
-	IsActive  bool              `json:"is_active"`
-	Employees []driver          `json:"employees"`
-	Revenue   float64           `json:"revenue"`
-	Departments map[string]int    `json:"departments"`
-	Headquarters struct {
-		City  string `json:"city"`
-		State string `json:"state"`
-	} `json:"headquarters"`
-}
-```
-
-### 3. Pre-Declare Your Instances (Optional)
-
-You can declare instances of your configuration structs. These can be initially empty or populated with default values.
+The example below shows a typical setup – two configuration sections (`app_api` and `Appconf_second`) managed by a single handler.
 
 ```go
-// Pre-declare instances (can be empty or have default values)
-miles := driver{
-	Name:   "Miles",
-	Age:    23,
-	Gender: "male",
-	Job:    "driver",
-}
+package main
 
-Uber := Company{
-	ID:       8403453853045,
-	Name:     "Uber",
-	Founded:  "2001/12/july",
-	IsActive: true,
-	Employees: []driver{miles},
-	Revenue:  352094284,
-	Departments: map[string]int{"Florida": 4, "Newyork": 3, "vegas": 8},
-	Headquarters: struct {
-		City  string `json:"city"`
-		State string `json:"state"`
-	}{City: "miami", State: "Florida"},
-}
+import (
+	"fmt"
+	"github.com/Alrz7/fig"
+)
 
-// Let's assume 'porche911' and 'name' (for CEO) are also defined elsewhere
-// For example:
-// porche911 := SomeOtherStruct{ ... }
-// name := "Alice" // simple string example
-```
-
-### 4. Add Instances as Pointers to the Handler
-
-Use the `Set` method of your handler to register your configuration instances. Crucially, you must pass them as **pointers**. This allows FIG to track and manage changes to these variables.
-
-```go
-initConfig := func() {
-	// Add your pre-declared instances as pointers
-	appConfig.Set("Uber", &Uber)
-	appConfig.Set("porche911", &porche911) // Assuming porche911 is defined
-	appConfig.Set("CEO", &name)          // Assuming name is defined as a string pointer or similar
-}
-
-// Call the init function to set up your configurations
-initConfig()
-```
-
-**Important:** The `defer appConfig.PanicRestore(appConfig)` line is essential. It ensures that your handler automatically saves and synchronizes the data after the first load and whenever operations are completed. This provides a robust mechanism for persisting changes.
-
-### 5. Modify and Save Configurations
-
-You can pass your configuration data (as pointers) anywhere in your application and modify them. FIG will only save these changes to the JSON file when you explicitly call the `Save()` function on your handler.
-
-```go
-// Example: Modifying the Uber configuration
-func updateUberRevenue(newRevenue float64) {
-	// Retrieve the pointer to the Uber configuration
-	uberConfigPtr, err := appConfig.Get("Uber")
-	if err != nil {
-		// Handle error
-		return
+func main() {
+	// Define your configuration structs
+	type api struct {
+		Url  string `json:"url"`
+		Port int    `json:"port"`
+	}
+	type car struct {
+		Name  string `json:"name"`
+		Model string `json:"model"`
+		Year  int    `json:"year"`
 	}
 
-	// Assert the type to your Company struct (or the correct type)
-	// Use type assertion or a safer method if available in your core library
-	if company, ok := uberConfigPtr.(*Company); ok {
-		company.Revenue = newRevenue
-		fmt.Printf("Uber revenue updated to: %.2f\n", company.Revenue)
+	// Create a handler (the main orchestrator)
+	appConfig := fig.CreateNewHandler("./config/", "appConfig")
 
-		// Save the changes back to the JSON file
-		if err := appConfig.Save(); err != nil {
-			// Handle save error
-			fmt.Printf("Error saving config: %v\n", err)
-		} else {
-			fmt.Println("Configuration saved successfully.")
-		}
-	} else {
-		fmt.Println("Error: Could not assert type for Uber configuration.")
+	// Create two fields linked to the handler
+	apiField := appConfig.NewField("./config/", "app_api")
+	carField := appConfig.NewField("./config/", "Appconf_second")
+
+	// Prepare your variables (must be pointers)
+	googleAPI := &api{}
+	porche911 := &car{
+		Name:  "porche911",
+		Model: "porche",
+		Year:  2003,
 	}
-}
 
-// Call the update function
-// updateUberRevenue(400000000)
+	// Register them with FIG
+	apiField.Set("google", googleAPI)
+	carField.Set("porche911", porche911)
+
+	// Modify the in‑memory values
+	googleAPI.Port = 5050
+
+	// Restore previous state (or create files if missing)
+	// It is recommended to call Restore after all Set operations.
+	appConfig.PanicRestore()
+
+	// Now configuration is ready – use googleAPI, porche911 directly
+	fmt.Printf("API port: %d\n", googleAPI.Port)
+}
 ```
 
-## 💡 Ideas and Enhancements
+### What happens behind the scenes?
 
-FIG is already quite powerful, but here are a few ideas for potential enhancements or alternative use cases:
+- `CreateNewHandler("./config/", "appConfig")` creates a handler that will manage a file `appConfig.json` inside `./config/`.
+- `NewField` creates a field – each field has its own JSON file (`app_api.json`, `Appconf_second.json`).
+- `Set(key, pointer)` stores the pointer internally. FIG tracks the value through the pointer.
+- `PanicRestore()`:
+  - If the JSON file exists, it reads the file and overwrites the fields of your structs (preserving any extra keys you added in code).
+  - If the file does not exist, it saves the current state (so the file is created).
+  - If a key exists in the file but not in your current `Set` call, FIG emits a warning (that key is ignored).
 
-*   **Advanced Validation:** Implement built-in validation rules for configuration fields (e.g., minimum/maximum values, required fields, regex patterns) that can be triggered during `Set` or `Save`.
-*   **Environment-Specific Configurations:** Support loading configurations based on the environment (e.g., `config.dev.json`, `config.prod.json`) and merging them.
-*   **Hot Reloading:** Introduce a mechanism for automatically detecting changes in the config file and reloading them into the application without requiring a restart.
-*   **Custom Data Types:** Extend support for custom data types beyond basic JSON primitives, perhaps with custom marshaling/unmarshaling logic.
-*   **Configuration Templating:** Allow for variables and environment expansion within the JSON configuration itself (e.g., using Go's `text/template` or `html/template` packages).
-*   **Decryption/Encryption:** Integrate support for encrypting sensitive configuration values (like API keys or passwords) within the JSON file and decrypting them upon loading.
-*   **Centralized Configuration Service Integration:** Adapt FIG to work with or fetch configurations from external services like Consul, etcd, or AWS Parameter Store.
-*   **Monitoring and Auditing:** Log changes made to the configuration and who made them, especially in distributed systems.
+After restore, you can continue working with your configs – any changes can be saved later with `Save()`.
 
-## 📄 License
+## API Overview
 
-This project is licensed under the [MIT License](LICENSE) - see the [LICENSE](LICENSE) file for details.
+### `Handler`
+
+- `CreateNewHandler(dir, name string) *Handler` – creates a new handler. `dir` must exist.
+- `(h *Handler) NewField(dir, name string) *Field` – creates a new field linked to this handler.
+- `(h *Handler) Save() error` – saves all linked fields and the handler info.
+- `(h *Handler) Restore() error` – restores all linked fields.
+- `(h *Handler) PanicSave()` / `PanicRestore()` – same as above, but panic on error.
+
+### `Field`
+
+- `CreateNewField(dir, name string) *Field` – creates an unlinked field (not recommended for most use cases).
+- `(f *Field) Set(key string, newValue any)` – stores a pointer under `key`. If the field has already been restored, it also triggers an immediate save.
+- `(f *Field) Pop(key string) any` – removes a key and returns its value.
+- `(f *Field) Save() error` – saves only this field.
+- `(f *Field) Restore() error` – restores only this field.
+
+### `Topic` (internal map)
+
+You normally don’t use `Topic` directly. It is a `map[string]any` that holds all key‑value pairs of a field.
+
+## Example Output
+
+After running the quick start example or `fig/core/fig_test.go`, three sample JSON files are created:
+
+**`./config/app_api.json`**
+```json
+{
+  "info": {
+    "dir": "./config/",
+    "name": "app_api",
+    "format": ".json",
+    "linked_to_Handler": true,
+    "last_time_modified": "2026-03-27T22:57:15.116582276+03:30"
+  },
+  "data": {
+    "google": { "url": "", "port": 5050 }
+  }
+}
+```
+
+**`./config/Appconf_second.json`**
+```json
+{
+  "info": {
+    "dir": "./config/",
+    "name": "Appconf_second",
+    "format": ".json",
+    "linked_to_Handler": true,
+    "last_time_modified": "2026-03-27T22:57:15.11705572+03:30"
+  },
+  "data": {
+    "porche911": { "Name": "porche911", "Model": "porche", "Year": 2003 }
+  }
+}
+```
+
+**`./config/appConfig.json`** (handler metadata)
+```json
+{
+  "dir": "./config/",
+  "name": "appConfig",
+  "format": ".json",
+  "last_time_modified": "2026-03-27T22:57:15.119952079+03:30",
+  "fileds_info": {
+    "Appconf_second": {
+      "dir": "./config/",
+      "name": "Appconf_second",
+      "format": "json",
+      "linked_to_Handler": true,
+      "last_time_modified": "2026-03-27T22:57:15.11705572+03:30"
+    },
+    "app_api": {
+      "dir": "./config/",
+      "name": "app_api",
+      "format": "json",
+      "linked_to_Handler": true,
+      "last_time_modified": "2026-03-27T22:57:15.116582276+03:30"
+    }
+  }
+}
+```
+
+## Important Notes
+
+1. **Pointers only** – `Set()` expects a pointer to your variable. Passing a value will not work.
+2. **Directory must exist** – FIG does not automatically create directories; you need to ensure `dir` exists beforehand.
+3. **Restore order** – always call `Restore()` (or `PanicRestore()`) **after** all `Set()` calls for a field. This ensures that saved data correctly overrides your default values.
+4. **Concurrency** – FIG is not thread‑safe yet, If you access the same field from multiple goroutines, add your own synchronisation.
+5. **Error handling** – Use the `Panic` variants (`PanicRestore`, `PanicSave`) for quick prototyping. In production, handle errors returned by `Save()` and `Restore()`.
+6. **Logger** – FIG uses an internal logger (from `github.com/Alrz7/fig/echo`). Errors are printed automatically when you use `Panic` methods.
+
+## License
+
+FIG is open source and available under the [MIT License](LICENSE).

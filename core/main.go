@@ -13,8 +13,8 @@ const (
 	Json      string = ".json"
 )
 
-type Handeler struct {
-	BaseDir          string    `json:"dir"` // handeler might have diferent Info Datas in future so i decided to not use the Fieldinfo here
+type Handler struct {
+	BaseDir          string    `json:"dir"` // Handler might have diferent Info Datas in future so i decided to not use the Fieldinfo here
 	Name             string    `json:"name"`
 	BaseFormat       string    `json:"format"`
 	LastModification time.Time `json:"last_time_modified"`
@@ -25,9 +25,9 @@ type Handeler struct {
 
 var logger = echo.DefultLogger
 
-// Handeler is gonna be the first building block of your config (your config File btw :) (dir-string: ./foo1/foo2/ , name-string: [HandelerName].HandelerType)
-// FIG only supportes Json yet so the name is going to be [HandelerName].json
-func CreateNewHandeler(dir, name string) *Handeler {
+// Handler is gonna be the first building block of your config (your config File btw :) (dir-string: ./foo1/foo2/ , name-string: [HandlerName].HandlerType)
+// FIG only supportes Json yet so the name is going to be [HandlerName].json
+func CreateNewHandler(dir, name string) *Handler {
 	isThere, err := file.CheckDir(dir)
 	logger.Error(err, "")
 	if !isThere {
@@ -35,18 +35,18 @@ func CreateNewHandeler(dir, name string) *Handeler {
 		// logger.Error(err, "")
 		logger.NewError("There was No such a Directory called %v, or maby the Path is Wrong!", dir)
 	}
-	newHandeler := Handeler{
+	newHandler := Handler{
 		BaseDir:    dir,
 		Name:       name,
 		BaseFormat: Json,
 		FieldsInfo: map[string]*FieldInfo{},
 		Fields:     map[string]*Field{},
 	}
-	return &newHandeler
+	return &newHandler
 }
 
 // .SaveInfo() saves infos of fields that has previusly changed.
-func (h *Handeler) SaveInfo() error {
+func (h *Handler) SaveInfo() error {
 	h.LastModification = time.Now()
 	bytes, err := json.Marshal(h)
 	if err != nil {
@@ -59,7 +59,7 @@ func (h *Handeler) SaveInfo() error {
 	return nil
 }
 
-func (h *Handeler) Save() error {
+func (h *Handler) Save() error {
 	for _, field := range h.Fields {
 		field.Info.LastModification = time.Now()
 		err := field.Save()
@@ -71,7 +71,7 @@ func (h *Handeler) Save() error {
 	return err
 }
 
-func (h *Handeler) PanicSave() {
+func (h *Handler) PanicSave() {
 	if err := h.Save(); err != nil {
 		logger.Error(err, "there was an error while saving `%v` at `%v`", h.Name, h.BaseDir)
 	}
@@ -79,14 +79,14 @@ func (h *Handeler) PanicSave() {
 
 /*
 Field.Restore() matches the Last saved datas on the Config file to the raw variables at the startup,
-there should be a call to the restore function at the end of every config Initiation, so you can either put a field/handeler.Restore()
-at the end of your initiation part of code or create a confInit() function for your Config Initiation and use a `defer field/handeler.Restore()`
+there should be a call to the restore function at the end of every config Initiation, so you can either put a field/Handler.Restore()
+at the end of your initiation part of code or create a confInit() function for your Config Initiation and use a `defer field/Handler.Restore()`
 to do the same, the second approache is Recommended.
-like the .Save() method, .Restore() is also avalable on both Handelers and Fields and it will effect on single field if is called on a field &
-will effect on all linked-Fields is is Called on a Handeler.
+like the .Save() method, .Restore() is also avalable on both Handlers and Fields and it will effect on single field if is called on a field &
+will effect on all linked-Fields is is Called on a Handler.
 if there was a variable in config that had no matching Item in your config youill get an error of type Prameter not declared.
 */
-func (h *Handeler) Restore() error {
+func (h *Handler) Restore() error {
 	exists, err := file.DoesExist(h.BaseDir, h.Name+h.BaseFormat)
 	if exists {
 		bytes, err := file.Read(h.BaseDir, h.Name+h.BaseFormat)

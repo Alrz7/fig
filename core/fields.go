@@ -12,7 +12,7 @@ type FieldInfo struct {
 	Dir              string    `json:"dir"`
 	Name             string    `json:"name"`
 	Format           string    `json:"format"`
-	LinkedToHandelr  bool      `json:"linked_to_handeler"`
+	LinkedToHandelr  bool      `json:"linked_to_Handler"`
 	LastModification time.Time `json:"last_time_modified"`
 }
 
@@ -25,7 +25,7 @@ type Field struct {
 }
 
 /*
-Use CreatNewField lets you create a self handeled field that has all the abilities but its Not linked to a handeler or a group of fields
+Use CreatNewField lets you create a self handeled field that has all the abilities but its Not linked to a Handler or a group of fields
 dir: the directory that you want to save your config in, the Base directory will be the Directory of your Config.go file and
 it should have a format like `./yourConfigDir/` |
 name: a name for your config file, its recomended to be the same as your variable's name.
@@ -52,10 +52,10 @@ func CreateNewField(dir, name string) *Field {
 }
 
 /*
-NewField lets you add a new field to the handeler you are calling the method on, it uses CreteNewField to initiate the new field
-and then links it to the Handeler
+NewField lets you add a new field to the Handler you are calling the method on, it uses CreteNewField to initiate the new field
+and then links it to the Handler
 */
-func (h *Handeler) NewField(dir, name string) *Field {
+func (h *Handler) NewField(dir, name string) *Field {
 	newfield := CreateNewField(dir, name)
 	newfield.Info.LinkedToHandelr = true
 	newfield.updateHandelrInfo = h.SaveInfo
@@ -67,7 +67,7 @@ func (h *Handeler) NewField(dir, name string) *Field {
 /*
 Use .Set() to add Items to your Field by Passing Their Pointers [NOT Values] to .set() along with a name for the item.
 Fig will keep eye on the item and by using .save() method on either the Field or the Handelr you can submit the changes to the Config File.
-Notice that the .save() mthod will save all linked-fields if is called on a handeler and will save a single field if is called on a field.
+Notice that the .save() mthod will save all linked-fields if is called on a Handler and will save a single field if is called on a field.
 */
 func (f *Field) Set(key string, newValue any) { // NOTE : need to make a WARNING about NewValue Being a Pointer (&any_value)
 	f.Data.Set(key, newValue)
@@ -82,7 +82,7 @@ func (f *Field) Pop(key string) any {
 
 /*
 Field.save() lets you submit or save the changes from your app to your config File,
-if the field was linked to a Handeler it will call a method on Handeler to update the Info(s) on Both sides.
+if the field was linked to a Handler it will call a method on Handler to update the Info(s) on Both sides.
 */
 func (f *Field) Save() error {
 	f.Info.LastModification = time.Now()
@@ -111,11 +111,11 @@ func (f *Field) PanicSave() {
 
 /*
 Field.Restore() matches the Last saved datas on the Config file to the raw variables at the startup,
-there should be a call to the restore function at the end of every config Initiation, so you can either put a field/handeler.Restore()
-at the end of your initiation part of code or create a confInit() function for your Config Initiation and use a `defer field/handeler.Restore()`
+there should be a call to the restore function at the end of every config Initiation, so you can either put a field/Handler.Restore()
+at the end of your initiation part of code or create a confInit() function for your Config Initiation and use a `defer field/Handler.Restore()`
 to do the same, the second approache is Recommended.
-like the .Save() method, .Restore() is also avalable on both Handelers and Fields and it will effect on single field if is called on a field &
-will effect on all linked-Fields is is Called on a Handeler.
+like the .Save() method, .Restore() is also avalable on both Handlers and Fields and it will effect on single field if is called on a field &
+will effect on all linked-Fields is is Called on a Handler.
 if there was a variable in config that had no matching Item in your config youill get an error of type Prameter not declared.
 */
 func (f *Field) Restore() error {
@@ -152,7 +152,7 @@ func (f *Field) Restore() error {
 	return nil
 }
 
-func (h *Handeler) PanicRestore() {
+func (h *Handler) PanicRestore() {
 	if err := h.Restore(); err != nil {
 		logger.Error(err, "there was an error while Restoring `%v` from `%v`", h.Name, h.BaseDir)
 	}
