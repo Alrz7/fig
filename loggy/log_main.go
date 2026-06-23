@@ -13,7 +13,7 @@ var DefaultLogger = log.NewWithOptions(os.Stderr, log.Options{
 	ReportCaller:    true,
 	ReportTimestamp: true,
 	TimeFormat:      time.Kitchen,
-	Prefix:          "Marble",
+	Prefix:          "FIG",
 })
 
 func Say(msg string) error {
