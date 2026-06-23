@@ -177,7 +177,7 @@ After running the quick start example or `fig/core/fig_test.go`, three sample JS
 3. **Restore order** – always call `Restore()` (or `PanicRestore()`) **after** all `Set()` calls for a field. This ensures that saved data correctly overrides your default values.
 4. **Concurrency** – FIG is not thread‑safe yet, If you access the same field from multiple goroutines, add your own synchronisation.
 5. **Error handling** – Use the `Panic` variants (`PanicRestore`, `PanicSave`) for quick prototyping. In production, handle errors returned by `Save()` and `Restore()`.
-6. **Logger** – FIG uses an internal logger (from `github.com/Alrz7/fig/echo`). Errors are printed automatically when you use `Panic` methods.
+6. **Logger** – FIG uses an internal logger (from `github.com/Alrz7/fig/loggy`). Errors are printed automatically when you use `Panic` methods.
 
 ## License
 

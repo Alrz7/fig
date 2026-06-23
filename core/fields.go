@@ -34,7 +34,9 @@ name: a name for your config file, its recomended to be the same as your variabl
 func CreateNewField(dir, name string) (*Field, error) {
 	// there should be the Dir-Path Unit checking this part
 	isThere, err := file.CheckDir(dir)
-	logger.Error(err, "")
+	if err != nil {
+		return nil, err
+	}
 	if !isThere {
 		return nil, loggy.Say(fmt.Sprintf("There was No such a Directory called %v, or maby the Path is Wrong!", dir))
 	}

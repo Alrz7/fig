@@ -30,10 +30,11 @@ var logger = loggy.DefaultLogger
 // FIG only supportes Json yet so the name is going to be [HandlerName].json
 func CreateNewHandler(dir, name string) (*Handler, error) {
 	isThere, err := file.CheckDir(dir)
-	logger.Error(err, "")
+	if err != nil{
+		return nil, err
+	}
 	if !isThere {
 		// err = file.MakeDir(dir)
-		// logger.Error(err, "")
 		return nil, loggy.Say(fmt.Sprintf("There was No such a Directory called %v, or maby the Path is Wrong!", dir))
 	}
 	newHandler := Handler{
