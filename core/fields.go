@@ -140,7 +140,6 @@ func (f *Field) Restore() error {
 		f.restored = true
 		newObject := needToSave(f, &tempField.Data)
 		if newObject {
-			fmt.Println(1)
 			err = f.Save()
 			if err != nil {
 				return err
@@ -149,7 +148,6 @@ func (f *Field) Restore() error {
 	} else if err != nil {
 		return err
 	} else {
-		fmt.Println(2)
 		err = f.Save()
 		if err != nil {
 			return err
