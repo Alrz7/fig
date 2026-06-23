@@ -2,10 +2,11 @@ package fig
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
-	"github.com/Alrz7/fig/echo"
 	"github.com/Alrz7/fig/file"
+	"github.com/Alrz7/fig/loggy"
 )
 
 const (
@@ -23,17 +24,17 @@ type Handler struct {
 	Fields     map[string]*Field     `json:"-"`
 }
 
-var logger = echo.DefultLogger
+var logger = loggy.DefaultLogger
 
 // Handler is gonna be the first building block of your config (your config File btw :) (dir-string: ./foo1/foo2/ , name-string: [HandlerName].HandlerType)
 // FIG only supportes Json yet so the name is going to be [HandlerName].json
-func CreateNewHandler(dir, name string) *Handler {
+func CreateNewHandler(dir, name string) (*Handler, error) {
 	isThere, err := file.CheckDir(dir)
 	logger.Error(err, "")
 	if !isThere {
 		// err = file.MakeDir(dir)
 		// logger.Error(err, "")
-		logger.NewError("There was No such a Directory called %v, or maby the Path is Wrong!", dir)
+		return nil, loggy.Say(fmt.Sprintf("There was No such a Directory called %v, or maby the Path is Wrong!", dir))
 	}
 	newHandler := Handler{
 		BaseDir:    dir,
@@ -42,7 +43,7 @@ func CreateNewHandler(dir, name string) *Handler {
 		FieldsInfo: map[string]*FieldInfo{},
 		Fields:     map[string]*Field{},
 	}
-	return &newHandler
+	return &newHandler, nil
 }
 
 // .SaveInfo() saves infos of fields that has previusly changed.

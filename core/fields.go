@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Alrz7/fig/file"
+	"github.com/Alrz7/fig/loggy"
 )
 
 type FieldInfo struct {
@@ -30,12 +31,12 @@ dir: the directory that you want to save your config in, the Base directory will
 it should have a format like `./yourConfigDir/` |
 name: a name for your config file, its recomended to be the same as your variable's name.
 */
-func CreateNewField(dir, name string) *Field {
+func CreateNewField(dir, name string) (*Field, error) {
 	// there should be the Dir-Path Unit checking this part
 	isThere, err := file.CheckDir(dir)
 	logger.Error(err, "")
 	if !isThere {
-		logger.NewError("There was No such a Directory called %v, or maby the Path is Wrong!", dir)
+		return nil, loggy.Say(fmt.Sprintf("There was No such a Directory called %v, or maby the Path is Wrong!", dir))
 	}
 	newInfo := FieldInfo{
 		Dir:             dir,
@@ -48,20 +49,23 @@ func CreateNewField(dir, name string) *Field {
 		restored: false,
 		Data:     Topic{},
 	}
-	return &newfield
+	return &newfield, nil
 }
 
 /*
 NewField lets you add a new field to the Handler you are calling the method on, it uses CreteNewField to initiate the new field
 and then links it to the Handler
 */
-func (h *Handler) NewField(dir, name string) *Field {
-	newfield := CreateNewField(dir, name)
+func (h *Handler) NewField(dir, name string) (*Field, error) {
+	newfield, err := CreateNewField(dir, name)
+	if err != nil {
+		return nil, err
+	}
 	newfield.Info.LinkedToHandelr = true
 	newfield.updateHandelrInfo = h.SaveInfo
 	h.Fields[name] = newfield
 	h.FieldsInfo[name] = &(newfield.Info)
-	return newfield
+	return newfield, nil
 }
 
 /*
@@ -184,7 +188,7 @@ func marsh(f *Field, data *Topic) error {
 				return err
 			}
 		} else {
-			logger.NewError("Not All of %v's parameters were declared in your Application: lost `%v`", f.Info.Name, key)
+			return loggy.Say(fmt.Sprintf("Not All of %v's parameters were declared in your Application: lost `%v`", f.Info.Name, key))
 		}
 	}
 	return nil
